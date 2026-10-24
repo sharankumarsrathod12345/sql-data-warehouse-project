@@ -1,113 +1,64 @@
+# SQL Server Data Warehouse
+**CRM + ERP integration · Bronze/Silver/Gold architecture · Sales reporting model**
 
-# Data Warehouse and Analytics Project
+A portfolio implementation that loads six CSV source files into SQL Server, cleans and integrates the records, and exposes customer, product, and sales views for analysis.
 
-Welcome to the **Data Warehouse and Analytics Project** repository! 🚀  
-This project demonstrates a comprehensive data warehousing and analytics solution, from building a data warehouse to generating actionable insights. Designed as a portfolio project, it highlights industry best practices in data engineering and analytics.
+![Data architecture](docs/DATA_ARCHITECTURE.drawio.png)
 
----
-## 🏗️ Data Architecture
+## Business purpose
 
-The data architecture for this project follows Medallion Architecture **Bronze**, **Silver**, and **Gold** layers:
-![Data Architecture](docs/DATA_ARCHITECTURE.drawio.png)
+Sales reporting needs consistent customer and product information. This project separates raw ingestion from cleansing and reporting so that source issues and transformation logic can be inspected.
 
-1. **Bronze Layer**: Stores raw data as-is from the source systems. Data is ingested from CSV Files into SQL Server Database.
-2. **Silver Layer**: This layer includes data cleansing, standardization, and normalization processes to prepare data for analysis.
-3. **Gold Layer**: Houses business-ready data modeled into a star schema required for reporting and analytics.
+## Architecture
 
----
-## 📖 Project Overview
+| Layer | Implementation | Purpose |
+| --- | --- | --- |
+| Bronze | Source-shaped tables and a bulk-load procedure | Load CRM and ERP CSV files |
+| Silver | Cleansed tables and a transformation procedure | Standardize and integrate source records |
+| Gold | Customer, product, and sales views | Expose a star-schema reporting model |
 
-This project involves:
+The Gold objects are **views**, not persisted fact and dimension tables. Product history is filtered to current records. Row-number-generated keys are not durable historical identifiers.
 
-1. **Data Architecture**: Designing a Modern Data Warehouse Using Medallion Architecture **Bronze**, **Silver**, and **Gold** layers.
-2. **ETL Pipelines**: Extracting, transforming, and loading data from source systems into the warehouse.
-3. **Data Modeling**: Developing fact and dimension tables optimized for analytical queries.
-4. **Analytics & Reporting**: Creating SQL-based reports and dashboards for actionable insights.
+## Sources and outputs
 
-🎯 This repository is an excellent resource for professionals and students looking to showcase expertise in:
-- SQL Development
-- Data Architect
-- Data Engineering  
-- ETL Pipeline Developer  
-- Data Modeling  
-- Data Analytics  
+[Source files](datasets/source/) include CRM customer, product, and sales records, plus ERP customer, location, and category records.
 
----
+| Gold view | Reporting role |
+| --- | --- |
+| `gold.dim_customers` | Customer identity and attributes |
+| `gold.dim_products` | Current products and categories |
+| `gold.fact_sales` | Sales records with customer/product keys, dates, amount, quantity, and price |
 
-## 🛠️ Important Links & Tools:
+Count distinct order numbers for order counts; a sales record is not automatically a whole order.
 
-Everything is for Free!
-- **[Datasets](datasets/):** Access to the project dataset (csv files).
-- **[SQL Server Express](https://www.microsoft.com/en-us/sql-server/sql-server-downloads):** Lightweight server for hosting your SQL database.
-- **[SQL Server Management Studio (SSMS)](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-ver16):** GUI for managing and interacting with databases.
-- **[Git Repository](https://github.com/):** Set up a GitHub account and repository to manage, version, and collaborate on your code efficiently.
-- **[DrawIO](https://www.drawio.com/):** Design data architecture, models, flows, and diagrams.
-- **[Notion](https://www.notion.com/):** All-in-one tool for project management and organization.
-- **[Notion Project Steps](https://thankful-pangolin-2ca.notion.site/SQL-Data-Warehouse-Project-16ed041640ef80489667cfe2f380b269?pvs=4):** Access to All Project Phases and Tasks.
+## Run locally
 
----
+Use SQL Server and SSMS with permissions to create the project database and load files.
 
-## 🚀 Project Requirements
+**The initialization script drops and recreates an existing database named `DataWarehouse`. Use an isolated practice environment and inspect the script before running it.**
 
-### Building the Data Warehouse (Data Engineering)
+1. Download or clone this repository.
+2. Review [database initialization](scripts/init_database.sql), then run it only in the intended environment.
+3. Select `DataWarehouse` as the database context for subsequent scripts.
+4. Run [Bronze DDL](scripts/bronze/ddl_bronze.sql) and [Silver DDL](scripts/silver/ddl_silver.sql).
+5. Edit all six file paths in [the Bronze procedure](scripts/bronze/proc_load_bronze.sql) to match the files under `datasets/source/`. The SQL Server service must be able to read them.
+6. Run both procedure-definition scripts: [Bronze](scripts/bronze/proc_load_bronze.sql) and [Silver](scripts/silver/proc_load_silver.sql).
+7. Execute `EXEC bronze.load_bronze;`, inspect messages and row counts, then execute `EXEC silver.load_silver;`.
+8. Review [Silver quality checks](tests/quality_checks_silver.sql).
+9. Create the [Gold views](scripts/gold/ddl_gold.sql), then review [Gold quality checks](tests/quality_checks_gold.sql).
 
-#### Objective
-Develop a modern data warehouse using SQL Server to consolidate sales data, enabling analytical reporting and informed decision-making.
+The loaders use truncate-and-reload behavior. Inspect error messages and outputs; printed completion messages alone are not a validation record.
 
-#### Specifications
-- **Data Sources**: Import data from two source systems (ERP and CRM) provided as CSV files.
-- **Data Quality**: Cleanse and resolve data quality issues prior to analysis.
-- **Integration**: Combine both sources into a single, user-friendly data model designed for analytical queries.
-- **Scope**: Focus on the latest dataset only; historization of data is not required.
-- **Documentation**: Provide clear documentation of the data model to support both business stakeholders and analytics teams.
+## Documentation and analysis
 
----
+- [Architecture image](docs/DATA_ARCHITECTURE.drawio.png)
+- [Data flow image](docs/DATA%20FLOW%20DIAGRAM.drawio.png)
+- [Companion SQL exploration project](https://github.com/sharankumarsrathod12345/medallion-warehouse-eda-analytics)
 
-### BI: Analytics & Reporting (Data Analysis)
+## Scope and limitations
 
-#### Objective
-Develop SQL-based analytics to deliver detailed insights into:
-- **Customer Behavior**
-- **Product Performance**
-- **Sales Trends**
+This is a portfolio warehouse with full reloads and current-state reporting. Incremental loading, historical dimension management, automated scheduling, and production performance benchmarks are not demonstrated here. Quality-check scripts are included; successful execution in a reader's environment must be verified separately.
 
-These insights empower stakeholders with key business metrics, enabling strategic decision-making.  
+[Repository license](LICENSE)
 
-For more details, refer to [docs/requirements.md](docs/requirements.md).
-
-## 📂 Repository Structure
-```
-data-warehouse-project/
-│
-├── datasets/                           # Raw datasets used for the project (ERP and CRM data)
-│
-├── docs/                               # Project documentation and architecture details
-│   ├── etl.drawio                      # Draw.io file shows all different techniquies and methods of ETL
-│   ├── data_architecture.drawio        # Draw.io file shows the project's architecture
-│   ├── data_catalog.md                 # Catalog of datasets, including field descriptions and metadata
-│   ├── data_flow.drawio                # Draw.io file for the data flow diagram
-│   ├── data_models.drawio              # Draw.io file for data models (star schema)
-│   ├── naming-conventions.md           # Consistent naming guidelines for tables, columns, and files
-│
-├── scripts/                            # SQL scripts for ETL and transformations
-│   ├── bronze/                         # Scripts for extracting and loading raw data
-│   ├── silver/                         # Scripts for cleaning and transforming data
-│   ├── gold/                           # Scripts for creating analytical models
-│
-├── tests/                              # Test scripts and quality files
-│
-├── README.md                           # Project overview and instructions
-├── LICENSE                             # License information for the repository
-├── .gitignore                          # Files and directories to be ignored by Git
-└── requirements.txt                    # Dependencies and requirements for the project
-```
----
-
-
-## 🛡️ License
-
-This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and share this project with proper attribution.
-
-## 🌟 About Me
-
-Hi there! I'm **Sharan Rathod**. I’m a **Data Nerd** on a mission to share knowledge and make working with data enjoyable and engaging!
+**Author:** Sharan Kumar Rathod
