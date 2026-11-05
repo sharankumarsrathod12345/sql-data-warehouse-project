@@ -29,7 +29,7 @@ The Gold objects are **views**, not persisted fact and dimension tables. Product
 | `gold.dim_products` | Current products and categories |
 | `gold.fact_sales` | Sales records with customer/product keys, dates, amount, quantity, and price |
 
-The Gold view column names follow the supplied warehouse exports, including `birth_date`, `sub_category`, and `product_cost`. Consumers built on the earlier published aliases `birthdate`, `subcategory`, and `cost` should update their queries when adopting this DDL. [Export reconciliation](https://github.com/sharankumarsrathod12345/medallion-warehouse-eda-analytics#verification-status).
+The Gold view column names follow the supplied warehouse exports, including `birth_date`, `sub_category`, and `product_cost`. Consumers built on the earlier published aliases `birthdate`, `subcategory`, and `cost` should update their queries when adopting this DDL. [Export reconciliation](https://github.com/sharankumarsrathod12345/medallion-warehouse-eda-analytics/blob/60dd9b6a18e859ec9c72554c4ea70bb55917ef36/README.md#verification-status).
 
 Count distinct order numbers for order counts; a sales record is not automatically a whole order.
 
