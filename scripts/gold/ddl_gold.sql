@@ -34,7 +34,7 @@ SELECT
         WHEN ci.cst_gndr != 'n/a' THEN ci.cst_gndr -- CRM is the primary source for gender
         ELSE COALESCE(ca.gen, 'n/a')  			   -- Fallback to ERP data
     END                                AS gender,
-    ca.bdate                           AS birthdate,
+    ca.bdate                           AS birth_date,
     ci.cst_create_date                 AS create_date
 FROM silver.crm_cust_info ci
 LEFT JOIN silver.erp_cust_az12 ca
@@ -58,9 +58,9 @@ SELECT
     pn.prd_nm       AS product_name,
     pn.cat_id       AS category_id,
     pc.cat          AS category,
-    pc.subcat       AS subcategory,
+    pc.subcat       AS sub_category,
     pc.maintenance  AS maintenance,
-    pn.prd_cost     AS cost,
+    pn.prd_cost     AS product_cost,
     pn.prd_line     AS product_line,
     pn.prd_start_dt AS start_date
 FROM silver.crm_prd_info pn
